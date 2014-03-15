@@ -51,7 +51,7 @@ function leaflet_more_maps_leaflet_map_info() {
 /**
  * Preprocess function for leaflet_more_maps.
  */
-function leaflet_more_maps_preprocess_leaflet_map(&$variables) {
+function leaflet_more_maps_leaflet_map_prebuild_alter(&$variables = NULL) {
   $path = drupal_get_path('module', 'leaflet_more_maps');
   // Increase weight so we're included after 'leaflet.drupal.js'
   $options = array('type' => 'file', 'weight' => 1);
@@ -193,7 +193,7 @@ function _leaflet_more_maps_assemble_default_map_info(&$map_info, $default_setti
     'layers' => array(
       'layer' => array(
         'type' => 'google',
-        'urlTemplate' => $prot . 'khm{s}.googleapis.com/kh?v=125&x={x}&y={y}&z={z}',
+        'urlTemplate' => $prot . 'khm{s}.googleapis.com/kh?v=142&x={x}&y={y}&z={z}',
         'options' => array(
           'attribution' => $attr_google,
           // 'detectRetina' => TRUE,
@@ -219,7 +219,7 @@ function _leaflet_more_maps_assemble_default_map_info(&$map_info, $default_setti
     'layers' => array(
       'layer' => array(
         'type' => 'google',
-        'urlTemplate' => $prot . 'khm{s}.googleapis.com/kh?v=125&x={x}&y={y}&z={z}',
+        'urlTemplate' => $prot . 'khm{s}.googleapis.com/kh?v=142&x={x}&y={y}&z={z}',
         'options' => array(
           'attribution' => $attr_google,
           // 'detectRetina' => TRUE,
@@ -304,7 +304,7 @@ function _leaflet_more_maps_assemble_default_map_info(&$map_info, $default_setti
     );
   }
   // OpenStreetMap OSM Mapnik classic map is available via leaflet.module
-  $attr_osm = 'Map data &copy; <a target="attr" href="http://openstreetmap.org">OpenStreetMap</a> and contributors';
+  $attr_osm = 'Map data &copy; <a target="attr" href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   // MapQuest OSM.
   $attr_mapquest = 'Tiles by <a target="attr" href="http://mapquest.com">MapQuest</a>. ' . $attr_osm;
@@ -410,9 +410,65 @@ function _leaflet_more_maps_assemble_default_map_info(&$map_info, $default_setti
       ),
     ),
   );
+  // OpenSeeMap http://openseamap.org
+  $attr_owm = 'OpenSeaMap. ' . $attr_osm;
+  $map_info['osm-sea'] = array(
+    'label' => 'OSM OpenSeaMap (zoom 0..18)',
+    'description' => t('OpenStreetMap with sea marks overlay'),
+    'settings' => $default_settings,
+    'layers' => array(
+      'base' => array(
+        'urlTemplate' => $prot . "{s}.tile.openstreetmap.org/$zxy",
+        'options' => array('attribution' => $attr_owm),
+      ),
+      'sea marks' => array(
+        'urlTemplate' => $prot . "tiles.openseamap.org/seamark/$zxy",
+        'options' => array('attribution' => $attr_owm),
+      ),
+    ),
+  );
+
+  // OpenWeatherMap http://openweathermap.org
+  $attr_owm = 'OpenWeatherMap. ' . $attr_osm;
+  $map_info['osm-weather'] = array(
+    'label' => 'OSM OpenWeatherMap (zoom 0..18)',
+    'description' => t('Precipitation with pressure contours'),
+    'settings' => $default_settings,
+    'layers' => array(
+      'base' => array(
+        'urlTemplate' => $prot . "{s}.tile.openstreetmap.org/$zxy",
+        'options' => array('attribution' => $attr_owm),
+      ),
+      'precipitation' => array(
+        'urlTemplate' => $prot . "{s}.tile.openweathermap.org/map/precipitation/$zxy",
+        'options' => array('attribution' => $attr_owm),
+      ),
+      'pressure' => array(
+        'urlTemplate' => $prot . "{s}.tile.openweathermap.org/map/pressure_cntr/$zxy",
+        'options' => array('attribution' => $attr_owm),
+      ),
+    ),
+  );
+
+  // geocommons http://geocommons.com
+  $attr_geocommons = 'Tiles by Geocommons &copy; <a target="attr" href="http://geocommons.com/overlays/acetate">Esri & Stamen</a>. ' . $attr_osm;
+  $map_info['geocommons'] = array(
+    'label' => 'Geocommons Acetate (zoom 2..18)',
+    'description' => t('Neutral basemap'),
+    'settings' => array('minZoom' => 2) + $default_settings,
+    'layers' => array(
+      'acetate' => array(
+        'urlTemplate' => $prot . "a{s}.acetate.geoiq.com/tiles/acetate/$zxy",
+        'options' => array(
+          'attribution' => $attr_geocommons,
+          'subdomains' => array(0, 1, 2, 3, 4, 5, 6),
+        ),
+      ),
+    ),
+  );
 
   //Skobbler
-  $attr_skobbler = '<a target="attr" href="http://skobbler.com">Skobbler</a>';
+  $attr_skobbler = '<a target="attr" href="http://maps.skobbler.com">Skobbler</a>';
   $skobbler_key = variable_get('leaflet_more_maps_skobbler_key', '');
   $map_info['skobbler'] = array(
     'label' => 'Skobbler maps (zoom 0..18)',

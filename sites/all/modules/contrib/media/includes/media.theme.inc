@@ -7,19 +7,33 @@
  * Theming functions for the Media module.
  */
 
-
 /**
- * Display a media file list.
+ * Returns HTML for a managed file element.
  *
- * @param array $element
- *   The form element.
+ * @param $variables
+ *   An associative array containing:
+ *   - element: A render element representing the file.
  *
- * @return string
- *   HTML of the file list
+ * @ingroup themeable
  */
-function theme_media_file_list($element) {
-  // Add the CSS for our display.
-  return '<div class="media-file-list">' . theme('form_element', $element, $element['#children']) . '</div>';
+function theme_media_element($variables) {
+  $element = $variables['element'];
+
+  $attributes = array();
+  if (isset($element['#id'])) {
+    $attributes['id'] = $element['#id'];
+  }
+  if (!empty($element['#attributes']['class'])) {
+    $attributes['class'] = (array) $element['#attributes']['class'];
+  }
+  $attributes['class'][] = 'form-media';
+
+  // This wrapper is required to apply JS behaviors and CSS styling.
+  $output = '';
+  $output .= '<div' . drupal_attributes($attributes) . '>';
+  $output .= drupal_render_children($element);
+  $output .= '</div>';
+  return $output;
 }
 
 /**
@@ -47,11 +61,18 @@ function theme_media_thumbnail($variables) {
 
   // Arguments for the thumbnail link.
   $thumb = $element['#children'];
-  $target = 'file/' . $element['#file']->fid . '/edit';
+  if (file_entity_access('update', $element['#file'])) {
+    $target = 'file/' . $element['#file']->fid . '/edit';
+    $title = t('Click to edit details');
+  }
+  else {
+    $target = 'file/' . $element['#file']->fid;
+    $title = t('Click to view details');
+  }
   $options = array(
     'query' => drupal_get_destination(),
     'html' => TRUE,
-    'attributes' => array('title' => t('Click to edit details')),
+    'attributes' => array('title' => $title),
   );
 
   // Element should be a field renderable array. This should be improved.
@@ -85,7 +106,7 @@ function template_preprocess_media_thumbnail(&$variables) {
  */
 function theme_media_formatter_large_icon($variables) {
   $file = $variables['file'];
-  $icon_dir = variable_get('media__icon_base_directory', 'public://media-icons') . '/' . variable_get('media__icon_set', 'default');
+  $icon_dir = variable_get('media_icon_base_directory', 'public://media-icons') . '/' . variable_get('media_icon_set', 'default');
   $icon = file_icon_path($file, $icon_dir);
   $variables['path'] = $icon;
 
